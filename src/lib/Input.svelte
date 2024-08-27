@@ -1,13 +1,13 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
-    import { type TerminalTheme } from "./colorScheme.js";
 
-    export let theme: TerminalTheme;
     export let inputText = "";
 
     const dispatch = createEventDispatcher();
     let caret = 0;
+    let caretHeight = 0;
     let inputBox: HTMLInputElement;
+    let terminalInputText: HTMLParagraphElement;
 
     function keyupevent(event: KeyboardEvent) {
         if (event.key === "Enter") {
@@ -17,6 +17,10 @@
         if (!event.target) return;
         //@ts-ignore
         caret = event.target.selectionStart;
+        if (terminalInputText) {
+            caretHeight = Math.trunc(terminalInputText.scrollHeight/18.8);
+            console.log(caretHeight);
+        }
     }
 
     function getSelectedText(): string | undefined {
@@ -45,20 +49,30 @@
 </script>
 
 <svelte:window on:click={windowClicked} />
+
 <input bind:this={inputBox} class="sr-only" id="terminal-input" type="text" bind:value={inputText} on:keyup={keyupevent} on:keypress={keyupevent} on:keydown={keyupevent} />
-<p id="terminal-input-text" style="--text-color:{theme.hex.brightWhite};">{inputText}<span class="blinker" style="--caret-pos: {caret};--caret-color:{theme.hex.cursor};"></span></p>
+<p id="terminal-input-text" bind:this={terminalInputText}>
+    <span class="green">root@192.168.0.26</span>:
+    <span class="blue">~/etc/nginx</span>$<span class="actual-text">{inputText}
+        <span class="blinker" style="--caret-pos: {caret};"></span>
+    </span>
+</p>
 
 <style>
     p {
         font-family: monospace;
-        font-size: 1rem;
+        font-size: 0.9rem;
         display: block;
-        position: relative;
-        color: var(--text-color);
-        /* background-color: red; */
-        width: fit-content;
+        color: var(--brightWhite-color);
+        max-width: 100%;
         min-width: 1px;
         min-height: 18.8px;
+    }
+
+    .actual-text {
+        position: relative;
+        min-width: 1px;
+        margin-left: 5px;
     }
 
     .blinker {
@@ -66,7 +80,6 @@
         position: absolute;
         top: 0;
         left: calc(1ch * var(--caret-pos));
-        /* left: 100%; */
         /* display: block; */
         width: 1ch;
         height: 100%;
@@ -86,6 +99,14 @@
         }
     }
 
+    .green {
+        color: var(--green-color);
+    }
+
+    .blue {
+        color: var(--blue-color);
+    }
+
     .sr-only {
         position: absolute;
         width: 1px;
@@ -97,7 +118,7 @@
         border: 0;
     }
 
-    #terminal-input:focus + p span {
+    #terminal-input:focus + p .blinker {
         display: block;
     }
 </style>
