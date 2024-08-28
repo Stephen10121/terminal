@@ -1,19 +1,29 @@
 <script lang="ts">
     import { defaultTheme, type TerminalTheme } from "./colorScheme.js";
+    import FakeInput from "./FakeInput.svelte";
     import Input from "./Input.svelte";
 
     export let width = "100%";
     export let height = "100%";
 
+    let commands: {
+        command: string,
+        date: number
+    }[] = [];
+
     let theme: TerminalTheme = defaultTheme;
+
+    function updateScroll(){
+        var element = document.getElementById("terminal");
+        element.scrollTop = element.scrollHeight;
+    }
 </script>
 
 <section
-    id="terminal"
     class="terminal"
     style="
-        --width: {width};
-        --height: {height};
+        --terminal-width: {width};
+        --terminal-height: {height};
         --background-color: {theme.hex.background};
         --caret-color: {theme.hex.cursor};
         --foreground-color: {theme.hex.foreground};
@@ -36,25 +46,57 @@
         --brightWhite-color: {theme.hex.brightWhite};
     "
 >
-    <Input />
+    <div id="terminal">
+        {#each commands as aCommand (aCommand.command + aCommand.date.toString())}
+            <FakeInput command={aCommand.command} />
+        {/each}
+        <Input on:enter={(e) => {
+            if (e.detail === "clear" || e.detail === "cls") {
+                commands = []
+            } else {
+                commands = [...commands, {
+                    command: e.detail,
+                    date: Date.now()
+                }];
+            }
+            setTimeout(updateScroll, 1);
+        }} />
+    </div>
 </section>
 
 <style>
     .terminal,
-    .terminal * {
+    .terminal * 
+    {
         padding: 0;
         margin: 0;
         box-sizing: border-box;
     }
     
-    p {
+    /* p {
         font-family: monospace;
-    }
+        font-size: 0.9rem;
+        color: var(--brightWhite-color);
+    } */
 
     .terminal {
+        /* display: block; */
         background-color: var(--background-color);
-        width: var(--width);
-        height: var(--height);
+        width: var(--terminal-width);
+        /* width: 100%; */
+        height: var(--terminal-height);
+        /* max-width: 100%; */
+        max-height: var(--terminal-height);
+        /* max-height: 100%; */
+        /* max-height: 100%; */
+        /* padding: 15px; */
+        overflow: hidden;
+    }
+
+    .terminal div {
+        width: 100%;
+        height: 100%;
         padding: 15px;
+        overflow-y: auto;
     }
 </style>

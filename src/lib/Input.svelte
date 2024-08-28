@@ -2,24 +2,43 @@
     import { createEventDispatcher } from "svelte";
 
     export let inputText = "";
+    export let clearOnEnter = true;
 
     const dispatch = createEventDispatcher();
     let caret = 0;
-    let caretHeight = 0;
+    let caretHeight = 1;
     let inputBox: HTMLInputElement;
     let terminalInputText: HTMLParagraphElement;
 
-    function keyupevent(event: KeyboardEvent) {
+
+
+    function keydownevent(event: KeyboardEvent) {
         if (event.key === "Enter") {
             dispatch("enter", inputText);
+            if (clearOnEnter) {
+                inputText = "";
+                setTimeout(() => {
+                    caret = 0;
+                }, 1);
+            }
         }
 
         if (!event.target) return;
         //@ts-ignore
         caret = event.target.selectionStart;
         if (terminalInputText) {
-            caretHeight = Math.trunc(terminalInputText.scrollHeight/18.8);
-            console.log(caretHeight);
+            caretHeight = Math.trunc(terminalInputText.scrollHeight/17);
+        }
+    }
+    function keyevent(event: KeyboardEvent) {
+        
+
+        if (!event.target) return;
+        //@ts-ignore
+        caret = event.target.selectionStart;
+        if (terminalInputText) {
+            caretHeight = Math.trunc(terminalInputText.scrollHeight/17);
+            console.log(caretHeight)
         }
     }
 
@@ -50,11 +69,11 @@
 
 <svelte:window on:click={windowClicked} />
 
-<input bind:this={inputBox} class="sr-only" id="terminal-input" type="text" bind:value={inputText} on:keyup={keyupevent} on:keypress={keyupevent} on:keydown={keyupevent} />
+<input bind:this={inputBox} class="sr-only" id="terminal-input" type="text" bind:value={inputText} on:keyup={keyevent} on:keypress={keyevent} on:keydown={keydownevent} />
 <p id="terminal-input-text" bind:this={terminalInputText}>
     <span class="green">root@192.168.0.26</span>:
-    <span class="blue">~/etc/nginx</span>$<span class="actual-text">{inputText}
-        <span class="blinker" style="--caret-pos: {caret};"></span>
+    <span class="blue">/etc/nginx</span>$<span class="actual-text">{inputText}
+        <span class="blinker" style="--caret-pos: {caret};--caret-height:{caretHeight};"></span>
     </span>
 </p>
 
@@ -66,7 +85,8 @@
         color: var(--brightWhite-color);
         max-width: 100%;
         min-width: 1px;
-        min-height: 18.8px;
+        min-height: 17px;
+        /* overflow: hidden; */
     }
 
     .actual-text {
@@ -78,11 +98,10 @@
     .blinker {
         display: none;
         position: absolute;
-        top: 0;
+        bottom: 0;
         left: calc(1ch * var(--caret-pos));
-        /* display: block; */
         width: 1ch;
-        height: 100%;
+        height: 17px;
         background-color: var(--caret-color);
         animation: blink 0.75s linear infinite;
     }
