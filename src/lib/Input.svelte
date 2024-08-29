@@ -13,6 +13,7 @@
 
 
     function keydownevent(event: KeyboardEvent) {
+        console.log(event.key)
         if (event.key === "Enter") {
             dispatch("enter", inputText);
             if (clearOnEnter) {
@@ -69,7 +70,7 @@
 
 <svelte:window on:click={windowClicked} />
 
-<input bind:this={inputBox} class="sr-only" id="terminal-input" type="text" bind:value={inputText} on:keyup={keyevent} on:keypress={keyevent} on:keydown={keydownevent} />
+<input bind:this={inputBox} class="sr-only" id="terminal-input" autocomplete="off" type="text" bind:value={inputText} on:keyup={keyevent} on:keydown={keydownevent} />
 <p id="terminal-input-text" bind:this={terminalInputText}>
     <span class="green">root@192.168.0.26</span>:
     <span class="blue">/etc/nginx</span>$<span class="actual-text">{inputText}
