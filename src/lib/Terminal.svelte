@@ -9,6 +9,9 @@
     export let clearInputOnEnter = true;
     export let customApplications: ApplicationsObject = {}
 
+    const commandHistory: {[key: number]: string} = {};
+    let commandHistoryLookupIndex = -1;
+
     let applications: ApplicationsObject = {
         ...defaultApplications,
         ...customApplications,
@@ -56,6 +59,7 @@
     })[] = [];
 
     let theme: TerminalTheme = defaultThemes.dark;
+    let inputText: string;
 
     function updateScroll(){
         terminalBox.scrollTop = terminalBox.scrollHeight;
@@ -63,6 +67,9 @@
 
     async function enterIsPressed(command: string) {
         const splitCommand = command.split(" ");
+
+        commandHistoryLookupIndex = -1;
+        commandHistory[Object.keys(commandHistory).length] = splitCommand[0];
 
         if (splitCommand[0] === "clear" || splitCommand[0] === "cls") {
             commands = [];
@@ -133,6 +140,22 @@
             showInput = true;
         }
     }
+
+    function historyUp() {
+        if (commandHistoryLookupIndex === -1) {
+            commandHistoryLookupIndex = Object.keys(commandHistory).length - 1;
+        } else {
+            commandHistoryLookupIndex = Math.max(0, commandHistoryLookupIndex-1);
+        }
+        inputText = commandHistory[commandHistoryLookupIndex];
+    }
+
+    function historyDown() {
+        if (commandHistoryLookupIndex !== -1) {
+            commandHistoryLookupIndex = Math.min(Object.keys(commandHistory).length - 1, commandHistoryLookupIndex+1);
+            inputText = commandHistory[commandHistoryLookupIndex];
+        }
+    }
 </script>
 
 <section
@@ -174,10 +197,16 @@
         {/each}
     </div>
     {#if showInput}
-        <Input clearOnEnter={clearInputOnEnter} on:enter={(e) => {
-            enterIsPressed(e.detail);
-            setTimeout(updateScroll, 1);
-        }} />
+        <Input
+            bind:inputText={inputText}
+            clearOnEnter={clearInputOnEnter}
+            on:historyUp={historyUp}
+            on:historyDown={historyDown}
+            on:enter={(e) => {
+                enterIsPressed(e.detail);
+                setTimeout(updateScroll, 1);
+            }}
+        />
     {/if}
 </section>
 

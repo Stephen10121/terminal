@@ -19,6 +19,15 @@
             }
         }
 
+        if (event.key === "ArrowUp") {
+            event.preventDefault();
+            dispatch("historyUp");
+        }
+        if (event.key === "ArrowDown") {
+            event.preventDefault();
+            dispatch("historyDown");
+        }
+
         if (!event.target) return;
         //@ts-ignore
         caret = event.target.selectionStart;
