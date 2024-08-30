@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { createEventDispatcher } from "svelte";
+    import { createEventDispatcher, onMount } from "svelte";
 
     export let inputText = "";
     export let clearOnEnter: boolean;
@@ -61,6 +61,10 @@
             }
         }
     }
+
+    onMount(() => {
+        inputBox.focus();
+    });
 </script>
 
 <svelte:window on:click={windowClicked} />

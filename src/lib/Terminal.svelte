@@ -63,7 +63,7 @@
             }
             let dupTimePreventer = 1;
 
-            await applications[applicationName].trigger(applicationArgs, applicationFlags, (text) => {
+            const exitCode = await applications[applicationName].trigger(applicationArgs, applicationFlags, (text) => {
                 commands = [...commands, {
                     type: "response",
                     response: text,
@@ -71,6 +71,14 @@
                 }];
                 dupTimePreventer++;
             });
+
+            if (exitCode !== 0) {
+                commands = [...commands, {
+                    type: "response",
+                    response: `<span style="color:var(--magenta-color);">Program exited with code <span style="color:var(--red-color);">'${exitCode}'</span></span>`,
+                    date: Date.now() + dupTimePreventer
+                }];
+            }
 
             showInput = true;
         }
