@@ -1,13 +1,47 @@
 <script lang="ts">
-    import { applications } from "./applications.js";
+    import { defaultApplications, type ApplicationsObject } from "./applications.js";
     import { defaultThemes, type TerminalTheme } from "./colorScheme.js";
-    import { defaultCommands } from "./commands.js";
     import FakeInput from "./FakeInput.svelte";
     import Input from "./Input.svelte";
 
     export let width = "100%";
     export let height = "100%";
     export let clearInputOnEnter = true;
+    export let customApplications: ApplicationsObject = {}
+
+    let applications: ApplicationsObject = {
+        ...defaultApplications,
+        ...customApplications,
+        theme: {
+        description: 'The theme command lets you choose the theme of the terminal. For more information use this command: <span style="color:var(--green-color);">theme --help</span>',
+        async trigger(args, flags, print) {
+            if (flags.includes("help")) {
+                print(`The <span style="color:var(--blue-color);">theme</span> command lets you choose a theme.<br>For example: <span style="color:var(--blue-color);">'theme doughnut'</span> lets you choose the doughnut theme.<br>To see all themes use this command: <span style="color:var(--blue-color);">'theme --list'</span>`);
+                return 0;
+            }
+            if (flags.includes("list")) {
+                print(`To select a theme, do something like this: <span style="color:var(--blue-color);">'theme red'</span>.<br>Themes:<br><span style="color:var(--brightMagenta-color);">doughnut</span><br><span style="color:var(--red-color);">red</span><br><span style="color:var(--brightBlack-color);">dark</span>`);
+                return 0;
+            }
+            if (args.includes("red")) {
+                print("Setting theme to red.");
+                theme = defaultThemes.red;
+                return 0;
+            }
+            if (args.includes("doughnut")) {
+                print("Setting theme to doughnut.");
+                theme = defaultThemes.doughnut;
+                return 0;
+            }
+            if (args.includes("dark")) {
+                print("Setting theme to dark.");
+                theme = defaultThemes.dark;
+                return 0;
+            }
+            return 0;
+        }
+    },
+    };
 
     let terminalBox: HTMLElement;
     let showInput = true;
@@ -40,6 +74,22 @@
             }];
 
             const applicationName = splitCommand[0];
+
+            if (applicationName.length === 0) return;
+
+            if (applicationName === "help") {
+                let applicationDescriptions = [];
+                const applicationsArray = Object.keys(applications);
+                for (let i=0;i<applicationsArray.length;i++) {
+                    applicationDescriptions.push(`<span style="color:var(--cyan-color);">${applicationsArray[i]}</span>     ${applications[applicationsArray[i]].description}`);
+                }
+                commands = [...commands, {
+                    type: "response",
+                    response: `${applicationDescriptions.join("<br>")}`,
+                    date: Date.now()
+                }];
+                return
+            }
 
             if (!Object.keys(applications).includes(applicationName)) {
                 commands = [...commands, {
@@ -119,7 +169,7 @@
             {#if aCommand.type === "prev-command"}
                 <FakeInput command={aCommand.command} />
             {:else if aCommand.type === "response"}
-                <p style="color:var(--brightWhite-color);">{@html aCommand.response}</p>
+                <pre class="responseText">{@html aCommand.response}</pre>
             {/if}
         {/each}
     </div>
@@ -138,7 +188,7 @@
         box-sizing: border-box;
     }
 
-    p {
+    pre {
         font-family: monospace;
         font-size: 0.9rem;
         display: block;
@@ -157,5 +207,16 @@
         padding: 15px;
         overflow-y: auto;
         position: relative;
+    }
+
+    .terminal div {
+        pointer-events: none;
+    }
+
+    .responseText {
+        color:var(--brightWhite-color);
+        display: block;
+        width: fit-content;
+        pointer-events: all;
     }
 </style>

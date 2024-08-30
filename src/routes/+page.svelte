@@ -3,7 +3,17 @@
 </script>
 
 <main>
-    <Terminal />
+    <Terminal 
+        customApplications={{
+            outsider: {
+                description: "This is the help command. Use it whenever you need help.",
+                async trigger(_args, _flags, print) {
+                    print("This is the help command.")
+                    return 0;
+                }
+            }
+        }}
+    />
 </main>
 
 <style>

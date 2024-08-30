@@ -34,7 +34,6 @@
         caret = event.target.selectionStart;
         if (terminalInputText) {
             caretHeight = Math.trunc(terminalInputText.scrollHeight/17);
-            console.log(caretHeight)
         }
     }
 
@@ -102,7 +101,7 @@
         width: 1ch;
         height: 17px;
         background-color: var(--caret-color);
-        animation: blink 0.75s linear infinite;
+        /* animation: blink 0.75s linear infinite; */
     }
 
     @keyframes blink {
