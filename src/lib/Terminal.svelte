@@ -147,7 +147,9 @@
         } else {
             commandHistoryLookupIndex = Math.max(0, commandHistoryLookupIndex-1);
         }
-        inputText = commandHistory[commandHistoryLookupIndex];
+        if (commandHistoryLookupIndex !== -1) {
+            inputText = commandHistory[commandHistoryLookupIndex];
+        }
     }
 
     function historyDown() {
