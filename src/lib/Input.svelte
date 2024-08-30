@@ -110,7 +110,8 @@
         width: 1ch;
         height: 17px;
         background-color: var(--caret-color);
-        /* animation: blink 0.75s linear infinite; */
+        transition: left 0.05s linear;
+        animation: blink 1s linear infinite;
     }
 
     @keyframes blink {

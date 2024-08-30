@@ -49,6 +49,11 @@ export const defaultApplications: ApplicationsObject = {
                 return 0;
             }
 
+            if (args.includes("github")) {
+                window.open("https://github.com/Stephen10121/terminal", '_blank')?.focus();
+                return 0;
+            }
+
             return 0;
         },
     }

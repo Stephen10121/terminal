@@ -69,7 +69,7 @@
         const splitCommand = command.split(" ");
 
         commandHistoryLookupIndex = -1;
-        commandHistory[Object.keys(commandHistory).length] = splitCommand[0];
+        commandHistory[Object.keys(commandHistory).length] = command;
 
         if (splitCommand[0] === "clear" || splitCommand[0] === "cls") {
             commands = [];
