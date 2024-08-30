@@ -1,21 +1,93 @@
 <script lang="ts">
-    import { defaultTheme, type TerminalTheme } from "./colorScheme.js";
+    import { defaultThemes, type TerminalTheme } from "./colorScheme.js";
+    import { defaultCommands } from "./commands.js";
     import FakeInput from "./FakeInput.svelte";
     import Input from "./Input.svelte";
 
     export let width = "100%";
     export let height = "100%";
+    export let clearInputOnEnter = true;
 
     let terminalBox: HTMLElement;
-    let commands: {
+    let commands: ({
+        type: "prev-command"
         command: string,
         date: number
-    }[] = [];
+    } | {
+        type: "response",
+        response: string,
+        date: number
+    })[] = [];
 
-    let theme: TerminalTheme = defaultTheme;
+    let theme: TerminalTheme = defaultThemes.dark;
 
     function updateScroll(){
         terminalBox.scrollTop = terminalBox.scrollHeight;
+    }
+
+    function enterIsPressed(command: string) {
+        if (command === "clear" || command === "cls") {
+            commands = [];
+        } else {
+            commands = [...commands, {
+                type: "prev-command",
+                command,
+                date: Date.now()
+            }];
+            const splitCommand = command.split(" ");
+            
+            for (let i=0;i<splitCommand.length;i++) {
+                if (splitCommand[i].substring(0,2) === "--") {
+                    const givenFlags = defaultCommands[splitCommand[0]].flags;
+                    let testedFlag = splitCommand[i].substring(2);
+                    if (givenFlags) {
+                        if (Object.keys(givenFlags).includes(testedFlag)) {
+                            commands = [...commands, {
+                                type: "response",
+                                //@ts-ignore
+                                response: givenFlags[testedFlag](defaultCommands[splitCommand[0]]),
+                                date: Date.now()
+                            }];
+                        } else {
+                            commands = [...commands, {
+                                type: "response",
+                                response: defaultCommands[splitCommand[0]].flagNotFound(defaultCommands[splitCommand[0]], testedFlag),
+                                date: Date.now()
+                            }];
+                        }
+                        return
+                    } else {
+                        break
+                    }
+                }
+            }
+            
+            for (let i=1;i<splitCommand.length;i++) {
+                if (splitCommand[i].substring(0,2) !== "--") {
+                    const givenArguments = defaultCommands[splitCommand[0]].args;
+                    let testedArgument = splitCommand[i];
+                    if (givenArguments) {
+                        if (Object.keys(givenArguments).includes(testedArgument)) {
+                            commands = [...commands, {
+                                type: "response",
+                                //@ts-ignore
+                                response: givenArguments[testedArgument](defaultCommands[splitCommand[0]]),
+                                date: Date.now()
+                            }];
+                        } else {
+                            commands = [...commands, {
+                                type: "response",
+                                response: defaultCommands[splitCommand[0]].argNotFound(defaultCommands[splitCommand[0]], testedArgument),
+                                date: Date.now()
+                            }];
+                        }
+                        return
+                    } else {
+                        break
+                    }
+                }
+            }
+        }
     }
 </script>
 
@@ -48,29 +120,36 @@
         --brightWhite-color: {theme.hex.brightWhite};
     "
 >
-        {#each commands as aCommand (aCommand.command + aCommand.date.toString())}
-            <FakeInput command={aCommand.command} />
+    <div>
+        {#each commands as aCommand (aCommand.type + aCommand.date.toString())}
+            {#if aCommand.type === "prev-command"}
+                <FakeInput command={aCommand.command} />
+            {:else if aCommand.type === "response"}
+                <p style="color:var(--brightWhite-color);">{@html aCommand.response}</p>
+            {/if}
         {/each}
-        <Input on:enter={(e) => {
-            if (e.detail === "clear" || e.detail === "cls") {
-                commands = []
-            } else {
-                commands = [...commands, {
-                    command: e.detail,
-                    date: Date.now()
-                }];
-            }
-            setTimeout(updateScroll, 1);
-        }} />
+    </div>
+    <Input clearOnEnter={clearInputOnEnter} on:enter={(e) => {
+        enterIsPressed(e.detail);
+        setTimeout(updateScroll, 1);
+    }} />
 </section>
 
 <style>
-    .terminal,
-    .terminal * 
+    #terminal,
+    :global(#terminal *)
     {
-        padding: 0;
-        margin: 0;
         box-sizing: border-box;
+    }
+
+    p {
+        font-family: monospace;
+        font-size: 0.9rem;
+        display: block;
+        color: var(--brightWhite-color);
+        max-width: 100%;
+        min-width: 1px;
+        min-height: 17px;
     }
 
     .terminal {

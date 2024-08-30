@@ -2,7 +2,7 @@
     import { createEventDispatcher } from "svelte";
 
     export let inputText = "";
-    export let clearOnEnter = true;
+    export let clearOnEnter: boolean;
 
     const dispatch = createEventDispatcher();
     let caret = 0;
@@ -10,17 +10,12 @@
     let inputBox: HTMLInputElement;
     let terminalInputText: HTMLParagraphElement;
 
-
-
     function keydownevent(event: KeyboardEvent) {
-        console.log(event.key)
         if (event.key === "Enter") {
             dispatch("enter", inputText);
             if (clearOnEnter) {
                 inputText = "";
-                setTimeout(() => {
-                    caret = 0;
-                }, 1);
+                setTimeout(() => {caret = 0}, 1);
             }
         }
 
@@ -87,7 +82,6 @@
         max-width: 100%;
         min-width: 1px;
         min-height: 17px;
-        /* overflow: hidden; */
     }
 
     .actual-text {
