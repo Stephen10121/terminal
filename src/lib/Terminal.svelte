@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { applications } from "./applications.js";
     import { defaultThemes, type TerminalTheme } from "./colorScheme.js";
     import { defaultCommands } from "./commands.js";
     import FakeInput from "./FakeInput.svelte";
@@ -9,6 +10,7 @@
     export let clearInputOnEnter = true;
 
     let terminalBox: HTMLElement;
+    let showInput = true;
     let commands: ({
         type: "prev-command"
         command: string,
@@ -25,8 +27,10 @@
         terminalBox.scrollTop = terminalBox.scrollHeight;
     }
 
-    function enterIsPressed(command: string) {
-        if (command === "clear" || command === "cls") {
+    async function enterIsPressed(command: string) {
+        const splitCommand = command.split(" ");
+
+        if (splitCommand[0] === "clear" || splitCommand[0] === "cls") {
             commands = [];
         } else {
             commands = [...commands, {
@@ -34,59 +38,41 @@
                 command,
                 date: Date.now()
             }];
-            const splitCommand = command.split(" ");
-            
-            for (let i=0;i<splitCommand.length;i++) {
-                if (splitCommand[i].substring(0,2) === "--") {
-                    const givenFlags = defaultCommands[splitCommand[0]].flags;
-                    let testedFlag = splitCommand[i].substring(2);
-                    if (givenFlags) {
-                        if (Object.keys(givenFlags).includes(testedFlag)) {
-                            commands = [...commands, {
-                                type: "response",
-                                //@ts-ignore
-                                response: givenFlags[testedFlag](defaultCommands[splitCommand[0]]),
-                                date: Date.now()
-                            }];
-                        } else {
-                            commands = [...commands, {
-                                type: "response",
-                                response: defaultCommands[splitCommand[0]].flagNotFound(defaultCommands[splitCommand[0]], testedFlag),
-                                date: Date.now()
-                            }];
-                        }
-                        return
-                    } else {
-                        break
-                    }
-                }
+
+            const applicationName = splitCommand[0];
+
+            if (!Object.keys(applications).includes(applicationName)) {
+                commands = [...commands, {
+                    type: "response",
+                    response: `bash: ${splitCommand[0]}: command not found<br><br>`,
+                    date: Date.now()
+                }];
+                return
             }
+
+            showInput = false;
+            const applicationFlags = [];
+            const applicationArgs = [];
             
             for (let i=1;i<splitCommand.length;i++) {
-                if (splitCommand[i].substring(0,2) !== "--") {
-                    const givenArguments = defaultCommands[splitCommand[0]].args;
-                    let testedArgument = splitCommand[i];
-                    if (givenArguments) {
-                        if (Object.keys(givenArguments).includes(testedArgument)) {
-                            commands = [...commands, {
-                                type: "response",
-                                //@ts-ignore
-                                response: givenArguments[testedArgument](defaultCommands[splitCommand[0]]),
-                                date: Date.now()
-                            }];
-                        } else {
-                            commands = [...commands, {
-                                type: "response",
-                                response: defaultCommands[splitCommand[0]].argNotFound(defaultCommands[splitCommand[0]], testedArgument),
-                                date: Date.now()
-                            }];
-                        }
-                        return
-                    } else {
-                        break
-                    }
+                if (splitCommand[i].substring(0,2) === "--") {
+                    applicationFlags.push(splitCommand[i].substring(2));
+                } else {
+                    applicationArgs.push(splitCommand[i]);
                 }
             }
+            let dupTimePreventer = 1;
+
+            await applications[applicationName].trigger(applicationArgs, applicationFlags, (text) => {
+                commands = [...commands, {
+                    type: "response",
+                    response: text,
+                    date: Date.now() + dupTimePreventer
+                }];
+                dupTimePreventer++;
+            });
+
+            showInput = true;
         }
     }
 </script>
@@ -129,10 +115,12 @@
             {/if}
         {/each}
     </div>
-    <Input clearOnEnter={clearInputOnEnter} on:enter={(e) => {
-        enterIsPressed(e.detail);
-        setTimeout(updateScroll, 1);
-    }} />
+    {#if showInput}
+        <Input clearOnEnter={clearInputOnEnter} on:enter={(e) => {
+            enterIsPressed(e.detail);
+            setTimeout(updateScroll, 1);
+        }} />
+    {/if}
 </section>
 
 <style>

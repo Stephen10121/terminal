@@ -32,6 +32,7 @@ let testCommand: CommandParams = {
         red: () => "red theme",
         dark: () => "dark theme",
         doughnut: () => "doughnut theme",
+        jana: () => "brooooo. eeeeeew"
     }
 }
 
