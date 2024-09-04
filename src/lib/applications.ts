@@ -32,7 +32,7 @@ export const defaultApplications: ApplicationsObject = {
         },
     },
     open: {
-        description: "Just opens different links and stuff like that.",
+        description: "This command opens up different links that I set up.",
         async trigger(args, flags, print) {
             if (args.includes("video")) {
                 window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ", '_blank')?.focus();
@@ -54,6 +54,7 @@ export const defaultApplications: ApplicationsObject = {
                 return 0;
             }
 
+            print(`To open a link in a new tab, do something like this: <span style="color:var(--blue-color);">'open github'</span>.<br>Links:<br><span style="color:var(--brightBlack-color);">github</span><br><span style="color:var(--blue-color);">linkedin</span><br><span style="color:var(--brightWhite-color);">website</span><br><span style="color:var(--red-color);">video</span>`);
             return 0;
         },
     }

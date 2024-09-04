@@ -1,5 +1,6 @@
 export type TerminalTheme = {
     "source": string,
+    "displayColor": "foreground" | "text" | "black" | "red" | "green" | "yellow" | "blue" | "magenta" | "cyan" | "white" | "brightBlack" | "brightRed" | "brightGreen" | "brightYellow" | "brightBlue" | "brightMagenta" | "brightCyan" | "brightWhite",
     "hex": {
         "background": string,
         "foreground": string,
@@ -24,9 +25,10 @@ export type TerminalTheme = {
     }
 }
 
-export const defaultThemes = {
+export const defaultThemes: {[key: string]: TerminalTheme} = {
     red: {
         "source": "rootloops.sh",
+        "displayColor": "red",
         "hex": {
             "background": "#331922",
             "foreground": "#f1dce2",
@@ -52,6 +54,7 @@ export const defaultThemes = {
     },
     dark: {
         "source": "rootloops.sh",
+        "displayColor": "brightBlack",
         "hex": {
             "background": "#0a0611",
             "foreground": "#f2eff8",
@@ -77,6 +80,7 @@ export const defaultThemes = {
     },
     doughnut: {
         "source": "rootloops.sh",
+        "displayColor": "brightMagenta",
         "hex": {
             "background": "#f3eefd",
             "foreground": "#0d021c",
@@ -98,6 +102,32 @@ export const defaultThemes = {
             "brightMagenta": "#deaff4",
             "brightCyan": "#4fdcdc",
             "brightWhite": "#0d021c"
+        }
+    },
+    light: {
+        "source": "rootloops.sh",
+        "displayColor": "brightWhite",
+        "hex": {
+            "background": "#eaf2f8",
+            "foreground": "#04090f",
+            "text": "#eaf2f8",
+            "cursor": "#35566c",
+            "black": "#eaf2f8",
+            "red": "#d77c6e",
+            "green": "#66ab75",
+            "yellow": "#b0964e",
+            "blue": "#7f95db",
+            "magenta": "#c877c1",
+            "cyan": "#51a7b6",
+            "white": "#35566c",
+            "brightBlack": "#99beda",
+            "brightRed": "#e4978a",
+            "brightGreen": "#79c289",
+            "brightYellow": "#c7ab60",
+            "brightBlue": "#99ace5",
+            "brightMagenta": "#d694d0",
+            "brightCyan": "#64becd",
+            "brightWhite": "#04090f"
         }
     }
 }

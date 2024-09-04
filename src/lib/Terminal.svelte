@@ -8,6 +8,13 @@
     export let height = "100%";
     export let clearInputOnEnter = true;
     export let customApplications: ApplicationsObject = {}
+    export let currentTheme = "dark";
+    export let extraThemes: {[key: string]: TerminalTheme} = {};
+
+    let allThemes: {[key: string]: TerminalTheme} = {
+        ...defaultThemes,
+        ...extraThemes
+    }
 
     const commandHistory: {[key: number]: string} = {};
     let commandHistoryLookupIndex = -1;
@@ -18,29 +25,39 @@
         theme: {
         description: 'The theme command lets you choose the theme of the terminal. For more information use this command: <span style="color:var(--green-color);">theme --help</span>',
         async trigger(args, flags, print) {
-            if (flags.includes("help")) {
-                print(`The <span style="color:var(--blue-color);">theme</span> command lets you choose a theme.<br>For example: <span style="color:var(--blue-color);">'theme doughnut'</span> lets you choose the doughnut theme.<br>To see all themes use this command: <span style="color:var(--blue-color);">'theme --list'</span>`);
-                return 0;
+            if (flags.length > 0) {
+                if (flags.includes("help")) {
+                    print(`The <span style="color:var(--blue-color);">theme</span> command lets you choose a theme.<br>For example: <span style="color:var(--blue-color);">'theme doughnut'</span> lets you choose the doughnut theme.<br>To see all themes use this command: <span style="color:var(--blue-color);">'theme --list'</span>`);
+                    return 0;
+                }
+    
+                if (flags.includes("list")) {
+                    let allThemesText = "";
+                    let themeKeys = Object.keys(allThemes);
+
+                    for (let i=0;i<themeKeys.length;i++) {
+                        allThemesText += `<br><span style="color:var(--${allThemes[themeKeys[i]].displayColor}-color);">${themeKeys[i]}</span>`;
+                    }
+                    
+                    print(`To select a theme, do something like this: <span style="color:var(--blue-color);">'theme red'</span>.<br>Themes:${allThemesText}`);
+                    return 0;
+                }
+                print(`<span style="color:var(--red-color);">'${flags[0]}'</span> is not a valid flag. Type <span style="color:var(--blue-color);">'theme --help'</span> for more information.`);
+                return 1;
             }
-            if (flags.includes("list")) {
-                print(`To select a theme, do something like this: <span style="color:var(--blue-color);">'theme red'</span>.<br>Themes:<br><span style="color:var(--brightMagenta-color);">doughnut</span><br><span style="color:var(--red-color);">red</span><br><span style="color:var(--brightBlack-color);">dark</span>`);
-                return 0;
+
+            if (args.length > 0) {
+                if (Object.keys(allThemes).includes(args[0])) {
+                    print(`Setting theme to ${args[0]}.`);
+                    currentTheme = args[0];
+                    return 0;
+                } else {
+                    print(`<span style="color:var(--red-color);">'${args[0]}'</span> is not a valid command. Type <span style="color:var(--blue-color);">'theme --help'</span> for more information.`);
+                    return 1;
+                }
             }
-            if (args.includes("red")) {
-                print("Setting theme to red.");
-                theme = defaultThemes.red;
-                return 0;
-            }
-            if (args.includes("doughnut")) {
-                print("Setting theme to doughnut.");
-                theme = defaultThemes.doughnut;
-                return 0;
-            }
-            if (args.includes("dark")) {
-                print("Setting theme to dark.");
-                theme = defaultThemes.dark;
-                return 0;
-            }
+            
+            print(`The <span style="color:var(--blue-color);">theme</span> command lets you choose a theme.<br>For example: <span style="color:var(--blue-color);">'theme doughnut'</span> lets you choose the doughnut theme.<br>To see all themes use this command: <span style="color:var(--blue-color);">'theme --list'</span>`);
             return 0;
         }
     },
@@ -58,10 +75,16 @@
         date: number
     })[] = [];
 
-    let theme: TerminalTheme = defaultThemes.dark;
+    let theme: TerminalTheme = defaultThemes["dark"];
+    $: {
+        if (Object.keys(allThemes).includes(currentTheme)) {
+            theme = allThemes[currentTheme];
+        }
+    }
+
     let inputText: string;
 
-    function updateScroll(){
+    function updateScroll() {
         terminalBox.scrollTop = terminalBox.scrollHeight;
     }
 
